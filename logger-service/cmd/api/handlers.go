@@ -1,8 +1,10 @@
 package main
 
 import (
-	"log-service/data"
+	"log"
 	"net/http"
+
+	"log-service/data"
 )
 
 type JSONPayload struct {
@@ -23,6 +25,7 @@ func (app *Config) WriteLog(w http.ResponseWriter, r *http.Request) {
 
 	err := app.Models.LogEntry.Insert(event)
 	if err != nil {
+		log.Println(err)
 		app.errorJSON(w, err)
 		return
 	}
