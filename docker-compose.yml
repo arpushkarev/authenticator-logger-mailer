@@ -3,9 +3,10 @@ version: '3'
 services:
 
   broker-service:
+    container_name: broker-service
     build:
       context: ./broker-service
-      dockerfile: ./../broker-service/broker-service.dockerfile
+      dockerfile: ./broker-service.dockerfile
     restart: always
     ports:
       - "8080:80"
@@ -14,18 +15,20 @@ services:
       replicas: 1
 
   logger-service:
+    container_name: logger-service
     build:
       context: ./logger-service
-      dockerfile: ./../logger-service/logger-service.dockerfile
+      dockerfile: ./logger-service.dockerfile
     restart: always
     deploy:
       mode: replicated
       replicas: 1
 
   authentication-service:
+    container_name: authentication-service
     build:
       context: ./authentication-service
-      dockerfile: ./../authentication-service/authentication-service.dockerfile
+      dockerfile: ./authentication-service.dockerfile
     restart: always
     ports:
       - "8081:80"
@@ -35,10 +38,20 @@ services:
     environment:
       DSN: "host=postgres port=5432 user=postgres password=password dbname=users sslmode=disable timezone=UTC connect_timeout=5"
 
+  listener-service:
+    container_name: listener-service
+    build:
+      context: ./listener-service
+      dockerfile: ./listener-service.dockerfile
+    deploy:
+      mode: replicated
+      replicas: 1
+
   mail-service:
+    container_name: mail-service
     build:
       context: ./mail-service
-      dockerfile: ./../mail-service/mail-service.dockerfile
+      dockerfile: ./mail-service.dockerfile
     restart: always
     deploy:
       mode: replicated
@@ -54,6 +67,7 @@ services:
       MAIL_NAME": "John Smith"
 
   postgres:
+    container_name: postgres
     image: 'postgres:14.2'
     ports:
       - "54321:5432"
@@ -62,28 +76,39 @@ services:
       mode: replicated
       replicas: 1
     environment:
-      POSTFRES_USER: postgres
+      POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password
       POSTGRES_DB: users
     volumes:
       - ./db-data/postgres/:/var/lib/postgresql/data/
 
   mongo:
-    image: 'mongo:4.2.16-bionic'
+    container_name: mongo
+    image: 'mongo:4.2.24-bionic'
     ports:
       - "27017:27017"
     environment:
       MONGO_INITDB_DATABASE: logs
-      MONGO_INITDB_ROOT_USERNAME: admin
-      MONGO_INITDB_ROOT_PASSWORD: password
+      MONGO_INITDB_ROOT_USERNAME: artem
+      MONGO_INITDB_ROOT_PASSWORD: pushkarev
     volumes:
       - ./db-data/mongo/:/data/db
 
   mailhog:
+    container_name: mailhog
     image: 'mailhog/mailhog:latest'
     ports:
       - "1025:1025"
       - "8025:8025"
 
-
+  rabbitmq:
+    container_name: rabbitmq
+    image: 'rabbitmq:3.9-alpine'
+    ports:
+      - "5672:5672"
+    deploy:
+      mode: replicated
+      replicas: 1
+    volumes:
+      - ./db-data/rabbitmq/:/var/lib/rabbitmq/
 
